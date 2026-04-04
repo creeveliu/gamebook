@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { getSyncHint } from "@/components/sync-status";
 import type { PlatformSlug } from "@/lib/platforms/types";
 
 type ConnectedAccountSummary = {
@@ -45,6 +46,7 @@ export function LibraryControls({
   const [values, setValues] = useState<Record<string, string>>(
     Object.fromEntries(accounts.map((account) => [account.platform, account.externalAccountId])),
   );
+  const hint = getSyncHint(pending);
 
   const connect = (platform: PlatformSlug) => {
     if (platform === "steam") {
@@ -83,6 +85,7 @@ export function LibraryControls({
         <div>
           <p className="text-xs uppercase tracking-[0.28em] text-white/45">Connected Platforms</p>
           <h2 className="mt-2 text-xl font-semibold text-white">手动同步，自动归档</h2>
+          {hint ? <p className="mt-2 text-sm text-white/55">{hint}</p> : null}
         </div>
         {error ? <p className="text-sm text-rose-300">{error}</p> : null}
       </div>

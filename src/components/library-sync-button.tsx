@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { getSyncHint } from "@/components/sync-status";
 import type { PlatformSlug } from "@/lib/platforms/types";
 
 type SyncableAccount = {
@@ -29,6 +30,7 @@ export function LibrarySyncButton({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const hint = getSyncHint(pending);
 
   const connectedSteam = accounts.find((account) => account.platform === "steam");
 
@@ -65,6 +67,7 @@ export function LibrarySyncButton({
       >
         {pending ? "同步中..." : "同步游戏库"}
       </button>
+      {hint ? <p className="text-xs text-white/55">{hint}</p> : null}
       {error ? <p className="text-xs text-rose-300">{error}</p> : null}
     </div>
   );
