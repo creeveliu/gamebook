@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCanonicalGameKey,
   mergeLibraryEntries,
+  sortLibraryEntries,
   upsertSyncedLibrary,
 } from "@/lib/domain/library";
 
@@ -125,5 +126,36 @@ describe("upsertSyncedLibrary", () => {
     expect(second.games[0].coverUrl).toBe("/cyberpunk-updated.jpg");
     expect(second.userGames[0].ownership).toBe("played");
     expect(second.userGames[0].lastSyncedAt).toBe("2026-04-04T10:00:00.000Z");
+  });
+});
+
+describe("sortLibraryEntries", () => {
+  it("pushes games without recent-play data behind games with recent-play data", () => {
+    const sorted = sortLibraryEntries(
+      [
+        {
+          id: "late_sync",
+          lastSyncedAt: "2026-04-04T12:00:00.000Z",
+          recentRank: null,
+        },
+        {
+          id: "played_first",
+          lastSyncedAt: "2026-04-04T08:00:00.000Z",
+          recentRank: 1,
+        },
+        {
+          id: "played_second",
+          lastSyncedAt: "2026-04-04T09:00:00.000Z",
+          recentRank: 2,
+        },
+      ],
+      "recent-played",
+    );
+
+    expect(sorted.map((entry) => entry.id)).toEqual([
+      "played_first",
+      "played_second",
+      "late_sync",
+    ]);
   });
 });

@@ -3,7 +3,7 @@ import {
   type OwnershipStatus,
   Prisma,
 } from "@prisma/client";
-import { buildCanonicalGameKey, mergeLibraryEntries } from "./domain/library";
+import { buildCanonicalGameKey, mergeLibraryEntries, sortLibraryEntries, type LibrarySort } from "./domain/library";
 import { getAdapter } from "./platforms/adapters";
 import {
   platformMap,
@@ -14,37 +14,12 @@ import {
 import { getOptionalCurrentUser, requireCurrentUser } from "./auth-guards";
 import { prisma } from "./prisma";
 
-export type LibrarySort = "recent-played" | "recent-sync" | "recent-notes";
-
 function parsePlatform(platform: PlatformSlug) {
   return platformMap[platform];
 }
 
 function mapOwnership(input: "owned" | "played"): OwnershipStatus {
   return input === "played" ? "PLAYED" : "OWNED";
-}
-
-function compareBySort(sort: LibrarySort) {
-  return (
-    a: { lastSyncedAt: string; lastNoteAt?: string | null; recentRank?: number | null },
-    b: { lastSyncedAt: string; lastNoteAt?: string | null; recentRank?: number | null },
-  ) => {
-    if (sort === "recent-played") {
-      if (a.recentRank != null && b.recentRank != null) {
-        return a.recentRank - b.recentRank || b.lastSyncedAt.localeCompare(a.lastSyncedAt);
-      }
-
-      if (a.recentRank != null) return -1;
-      if (b.recentRank != null) return 1;
-      return b.lastSyncedAt.localeCompare(a.lastSyncedAt);
-    }
-
-    if (sort === "recent-notes") {
-      return (b.lastNoteAt ?? "").localeCompare(a.lastNoteAt ?? "") || b.lastSyncedAt.localeCompare(a.lastSyncedAt);
-    }
-
-    return b.lastSyncedAt.localeCompare(a.lastSyncedAt);
-  };
 }
 
 export async function getConnectedAccounts() {
@@ -295,13 +270,13 @@ export async function getLibrary(options?: {
     userGames.map((userGame) => [userGame.game.canonicalKey, userGame.notes[0]?.updatedAt.toISOString() ?? null]),
   );
 
-  return entries
-    .map((entry) => ({
-      ...entry,
-      lastNoteAt: lastNoteMap.get(entry.canonicalKey) ?? null,
-      recentRank: entry.recentRank ?? null,
-    }))
-    .sort(compareBySort(sort));
+  const enrichedEntries = entries.map((entry) => ({
+    ...entry,
+    lastNoteAt: lastNoteMap.get(entry.canonicalKey) ?? null,
+    recentRank: entry.recentRank ?? null,
+  }));
+
+  return sortLibraryEntries(enrichedEntries, sort);
 }
 
 export async function getLibraryItem(userGameId: string) {

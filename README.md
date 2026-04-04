@@ -1,6 +1,6 @@
 # Gamebook
 
-一个“个人游戏书柜”网站。
+一个“个人游戏收藏”网站。
 
 ## 当前能力
 
@@ -51,6 +51,7 @@
 - `GameNote`
 
 `UserGame` 当前额外保存：
+
 - `recentRank`
 - `playtimeForeverMinutes`
 - `playtimeLastTwoWeeksMinutes`

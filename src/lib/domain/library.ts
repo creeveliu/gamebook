@@ -15,6 +15,8 @@ export type LibraryEntry = {
   playtimeLastTwoWeeksMinutes?: number | null;
 };
 
+export type LibrarySort = "recent-played" | "recent-sync" | "recent-notes";
+
 export type ExternalGameRecord = {
   platform: PlatformSlug;
   platformGameId: string;
@@ -99,6 +101,35 @@ export function mergeLibraryEntries(entries: LibraryEntry[]) {
   }
 
   return [...merged.values()];
+}
+
+export function sortLibraryEntries<
+  T extends {
+    lastSyncedAt: string;
+    lastNoteAt?: string | null;
+    recentRank?: number | null;
+  },
+>(entries: T[], sort: LibrarySort) {
+  return [...entries].sort((a, b) => {
+    if (sort === "recent-played") {
+      if (a.recentRank != null && b.recentRank != null) {
+        return a.recentRank - b.recentRank || b.lastSyncedAt.localeCompare(a.lastSyncedAt);
+      }
+
+      if (a.recentRank != null) return -1;
+      if (b.recentRank != null) return 1;
+      return b.lastSyncedAt.localeCompare(a.lastSyncedAt);
+    }
+
+    if (sort === "recent-notes") {
+      return (
+        (b.lastNoteAt ?? "").localeCompare(a.lastNoteAt ?? "") ||
+        b.lastSyncedAt.localeCompare(a.lastSyncedAt)
+      );
+    }
+
+    return b.lastSyncedAt.localeCompare(a.lastSyncedAt);
+  });
 }
 
 function createId(prefix: string, index: number) {
