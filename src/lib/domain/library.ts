@@ -15,7 +15,13 @@ export type LibraryEntry = {
   playtimeLastTwoWeeksMinutes?: number | null;
 };
 
-export type LibrarySort = "recent-played" | "recent-sync" | "recent-notes";
+export type LibrarySort = "two-week-playtime" | "total-playtime" | "recent-notes";
+
+export const defaultLibrarySort: LibrarySort = "two-week-playtime";
+
+export function isLibrarySort(value: string): value is LibrarySort {
+  return value === "two-week-playtime" || value === "total-playtime" || value === "recent-notes";
+}
 
 export type ExternalGameRecord = {
   platform: PlatformSlug;
@@ -108,17 +114,25 @@ export function sortLibraryEntries<
     lastSyncedAt: string;
     lastNoteAt?: string | null;
     recentRank?: number | null;
+    playtimeForeverMinutes?: number | null;
+    playtimeLastTwoWeeksMinutes?: number | null;
   },
 >(entries: T[], sort: LibrarySort) {
   return [...entries].sort((a, b) => {
-    if (sort === "recent-played") {
-      if (a.recentRank != null && b.recentRank != null) {
-        return a.recentRank - b.recentRank || b.lastSyncedAt.localeCompare(a.lastSyncedAt);
-      }
+    if (sort === "two-week-playtime") {
+      return (
+        (b.playtimeLastTwoWeeksMinutes ?? 0) - (a.playtimeLastTwoWeeksMinutes ?? 0) ||
+        (b.playtimeForeverMinutes ?? 0) - (a.playtimeForeverMinutes ?? 0) ||
+        b.lastSyncedAt.localeCompare(a.lastSyncedAt)
+      );
+    }
 
-      if (a.recentRank != null) return -1;
-      if (b.recentRank != null) return 1;
-      return b.lastSyncedAt.localeCompare(a.lastSyncedAt);
+    if (sort === "total-playtime") {
+      return (
+        (b.playtimeForeverMinutes ?? 0) - (a.playtimeForeverMinutes ?? 0) ||
+        (b.playtimeLastTwoWeeksMinutes ?? 0) - (a.playtimeLastTwoWeeksMinutes ?? 0) ||
+        b.lastSyncedAt.localeCompare(a.lastSyncedAt)
+      );
     }
 
     if (sort === "recent-notes") {

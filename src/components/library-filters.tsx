@@ -2,11 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  defaultLibrarySort,
+  isLibrarySort,
+  type LibrarySort,
+} from "@/lib/domain/library";
 
-const platformOptions = [
-  { value: "all", label: "全部平台" },
-  { value: "steam", label: "Steam" },
-  { value: "playstation", label: "PlayStation" },
+const sortOptions: Array<{ value: LibrarySort; label: string }> = [
+  { value: "two-week-playtime", label: "近两周时长" },
+  { value: "total-playtime", label: "总时长" },
+  { value: "recent-notes", label: "最近笔记" },
 ];
 
 export function LibraryFilters() {
@@ -16,9 +21,10 @@ export function LibraryFilters() {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const currentValue = searchParams.get("platform") ?? "all";
+  const rawSort = searchParams.get("sort");
+  const currentValue = rawSort && isLibrarySort(rawSort) ? rawSort : defaultLibrarySort;
   const currentOption =
-    platformOptions.find((option) => option.value === currentValue) ?? platformOptions[0];
+    sortOptions.find((option) => option.value === currentValue) ?? sortOptions[0];
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -31,9 +37,9 @@ export function LibraryFilters() {
     return () => window.removeEventListener("pointerdown", handlePointerDown);
   }, []);
 
-  const update = (value: string) => {
+  const update = (value: LibrarySort) => {
     const next = new URLSearchParams(searchParams);
-    next.set("platform", value);
+    next.set("sort", value);
     router.push(`${pathname}?${next.toString()}`);
     setOpen(false);
   };
@@ -48,7 +54,7 @@ export function LibraryFilters() {
         aria-expanded={open}
       >
         <span className="inline-flex items-center gap-2">
-          <span>{currentOption.label}</span>
+          <span>排序: {currentOption.label}</span>
           <svg
             viewBox="0 0 20 20"
             fill="none"
@@ -68,8 +74,8 @@ export function LibraryFilters() {
 
       {open ? (
         <div className="absolute left-0 top-[calc(100%+10px)] z-20 min-w-full overflow-hidden rounded-2xl border border-white/12 bg-[#161c29] p-1.5 shadow-[0_16px_48px_rgba(0,0,0,0.34)]">
-          <div role="listbox" aria-label="平台筛选" className="flex flex-col gap-1">
-            {platformOptions.map((option) => {
+          <div role="listbox" aria-label="排序方式" className="flex flex-col gap-1">
+            {sortOptions.map((option) => {
               const selected = option.value === currentOption.value;
 
               return (

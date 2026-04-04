@@ -63,11 +63,15 @@ export function LibrarySyncButton({
             }
           })
         }
-        className="rounded-full border border-white/12 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+        className="relative rounded-full border border-white/12 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {pending ? "同步中..." : "同步游戏库"}
+        {hint ? (
+          <span className="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap text-xs font-normal text-white/55">
+            {hint}
+          </span>
+        ) : null}
+        同步游戏库
       </button>
-      {hint ? <p className="text-xs text-white/55">{hint}</p> : null}
       {error ? <p className="text-xs text-rose-300">{error}</p> : null}
     </div>
   );

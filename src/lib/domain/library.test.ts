@@ -130,32 +130,96 @@ describe("upsertSyncedLibrary", () => {
 });
 
 describe("sortLibraryEntries", () => {
-  it("pushes games without recent-play data behind games with recent-play data", () => {
+  it("sorts by recent note activity, then falls back to sync time", () => {
     const sorted = sortLibraryEntries(
       [
         {
           id: "late_sync",
           lastSyncedAt: "2026-04-04T12:00:00.000Z",
-          recentRank: null,
+          lastNoteAt: null,
         },
         {
-          id: "played_first",
+          id: "noted_first",
           lastSyncedAt: "2026-04-04T08:00:00.000Z",
-          recentRank: 1,
+          lastNoteAt: "2026-04-04T13:00:00.000Z",
         },
         {
-          id: "played_second",
+          id: "noted_second",
           lastSyncedAt: "2026-04-04T09:00:00.000Z",
-          recentRank: 2,
+          lastNoteAt: "2026-04-04T11:00:00.000Z",
         },
       ],
-      "recent-played",
+      "recent-notes",
     );
 
     expect(sorted.map((entry) => entry.id)).toEqual([
-      "played_first",
-      "played_second",
+      "noted_first",
+      "noted_second",
       "late_sync",
+    ]);
+  });
+
+  it("sorts by two-week playtime first, then total playtime", () => {
+    const sorted = sortLibraryEntries(
+      [
+        {
+          id: "more_total",
+          lastSyncedAt: "2026-04-04T08:00:00.000Z",
+          playtimeLastTwoWeeksMinutes: 120,
+          playtimeForeverMinutes: 600,
+        },
+        {
+          id: "more_recent",
+          lastSyncedAt: "2026-04-04T09:00:00.000Z",
+          playtimeLastTwoWeeksMinutes: 240,
+          playtimeForeverMinutes: 300,
+        },
+        {
+          id: "same_recent_lower_total",
+          lastSyncedAt: "2026-04-04T10:00:00.000Z",
+          playtimeLastTwoWeeksMinutes: 120,
+          playtimeForeverMinutes: 400,
+        },
+      ],
+      "two-week-playtime",
+    );
+
+    expect(sorted.map((entry) => entry.id)).toEqual([
+      "more_recent",
+      "more_total",
+      "same_recent_lower_total",
+    ]);
+  });
+
+  it("sorts by total playtime first, then two-week playtime", () => {
+    const sorted = sortLibraryEntries(
+      [
+        {
+          id: "highest_total",
+          lastSyncedAt: "2026-04-04T08:00:00.000Z",
+          playtimeLastTwoWeeksMinutes: 0,
+          playtimeForeverMinutes: 1200,
+        },
+        {
+          id: "same_total_more_recent",
+          lastSyncedAt: "2026-04-04T09:00:00.000Z",
+          playtimeLastTwoWeeksMinutes: 240,
+          playtimeForeverMinutes: 600,
+        },
+        {
+          id: "same_total_less_recent",
+          lastSyncedAt: "2026-04-04T10:00:00.000Z",
+          playtimeLastTwoWeeksMinutes: 120,
+          playtimeForeverMinutes: 600,
+        },
+      ],
+      "total-playtime",
+    );
+
+    expect(sorted.map((entry) => entry.id)).toEqual([
+      "highest_total",
+      "same_total_more_recent",
+      "same_total_less_recent",
     ]);
   });
 });

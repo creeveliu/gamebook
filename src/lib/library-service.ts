@@ -3,7 +3,13 @@ import {
   type OwnershipStatus,
   Prisma,
 } from "@prisma/client";
-import { buildCanonicalGameKey, mergeLibraryEntries, sortLibraryEntries, type LibrarySort } from "./domain/library";
+import {
+  buildCanonicalGameKey,
+  defaultLibrarySort,
+  mergeLibraryEntries,
+  sortLibraryEntries,
+  type LibrarySort,
+} from "./domain/library";
 import { getAdapter } from "./platforms/adapters";
 import {
   platformMap,
@@ -221,7 +227,7 @@ export async function getLibrary(options?: {
   sort?: LibrarySort;
 }) {
   const user = await getOptionalCurrentUser();
-  const sort = options?.sort ?? "recent-played";
+  const sort = options?.sort ?? defaultLibrarySort;
   const filterPlatform = options?.platform && options.platform !== "all" ? parsePlatform(options.platform) : null;
 
   if (!user) {

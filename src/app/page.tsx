@@ -1,19 +1,28 @@
 import { AppShellHeader } from "@/components/app-shell-header";
 import { AuthButton } from "@/components/auth-button";
+import { LibraryFilters } from "@/components/library-filters";
 import { LibraryGrid } from "@/components/library-grid";
 import { LibrarySyncButton } from "@/components/library-sync-button";
 import { UserAvatarLink } from "@/components/user-avatar-link";
 import { auth } from "@/lib/auth";
+import { defaultLibrarySort, isLibrarySort } from "@/lib/domain/library";
 import { getConnectedAccounts, getLibrary } from "@/lib/library-service";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<{ sort?: string }>;
+}) {
+  const resolved = (await searchParams) ?? {};
   const session = await auth();
   const isLoggedIn = Boolean(session?.user);
+  const sort = resolved.sort && isLibrarySort(resolved.sort) ? resolved.sort : defaultLibrarySort;
 
   const [library, accounts] = await Promise.all([
-    getLibrary({ sort: "recent-played" }),
+    getLibrary({ sort }),
     getConnectedAccounts(),
   ]);
 
@@ -29,6 +38,7 @@ export default async function Home() {
             <div className="flex items-center gap-3 self-start lg:self-auto">
               {isLoggedIn ? (
                 <>
+                  <LibraryFilters />
                   <LibrarySyncButton
                     accounts={accounts.map((account) => ({
                       platform:
@@ -42,6 +52,12 @@ export default async function Home() {
                       displayName: account.displayName,
                     }))}
                   />
+                  <Link
+                    href="/settings"
+                    className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
+                  >
+                    设置
+                  </Link>
                   <UserAvatarLink user={session?.user ?? {}} />
                 </>
               ) : (
