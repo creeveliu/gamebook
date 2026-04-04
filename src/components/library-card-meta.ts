@@ -8,10 +8,6 @@ export function getLibraryCardStatus(recentRank?: number | null) {
   return recentRank != null ? "最近玩过" : null;
 }
 
-export function getLibraryCardActionLabel(isPending: boolean) {
-  return isPending ? "正在打开" : "点击查看";
-}
-
 export function getLibraryCardStats(input: {
   playtimeForeverMinutes?: number | null;
   playtimeLastTwoWeeksMinutes?: number | null;

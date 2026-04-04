@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  getLibraryCardActionLabel,
   getLibraryCardStatus,
   getLibraryCardStats,
 } from "@/components/library-card-meta";
@@ -25,10 +24,5 @@ describe("library card meta", () => {
         playtimeLastTwoWeeksMinutes: 0,
       }),
     ).toEqual([{ label: "总时长", value: "22h" }]);
-  });
-
-  it("switches the action label during pending navigation", () => {
-    expect(getLibraryCardActionLabel(false)).toBe("点击查看");
-    expect(getLibraryCardActionLabel(true)).toBe("正在打开");
   });
 });

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getLibraryCardActionLabel, getLibraryCardStats, getLibraryCardStatus } from "@/components/library-card-meta";
+import { getLibraryCardStats, getLibraryCardStatus } from "@/components/library-card-meta";
 
 type LibraryItem = {
   id: string;
@@ -24,7 +24,6 @@ export function LibraryCard({
 }) {
   const status = getLibraryCardStatus(item.recentRank);
   const stats = getLibraryCardStats(item);
-  const actionLabel = getLibraryCardActionLabel(isPending);
 
   return (
     <Link
@@ -69,15 +68,15 @@ export function LibraryCard({
             ))}
           </div>
         ) : null}
-        <div className="mt-3 flex items-center gap-2 text-xs font-medium text-white/78">
-          {isPending ? (
+        {isPending ? (
+          <div className="mt-3 flex items-center gap-2 text-xs font-medium text-white/78">
             <span
               aria-hidden="true"
               className="h-3.5 w-3.5 animate-spin rounded-full border border-white/35 border-t-white"
             />
-          ) : null}
-          <span>{actionLabel}</span>
-        </div>
+            <span>正在打开</span>
+          </div>
+        ) : null}
       </div>
     </Link>
   );

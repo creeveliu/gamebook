@@ -28,37 +28,42 @@ export default async function Home({
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(52,92,185,0.22),_rgba(8,12,20,0.98)_38%)] px-5 py-6 text-white sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-7xl">
+      <div className="relative mx-auto max-w-7xl">
         <AppShellHeader
           title="游戏库"
           description={
             isLoggedIn ? "" : "登录后即可同步 Steam、整理个人游戏库，并为每个游戏写下只属于你的私密笔记。"
           }
           rightSlot={
-            <div className="flex items-center gap-3 self-start lg:self-auto">
+            <div className="flex w-full flex-col gap-3 self-start lg:w-auto lg:self-auto">
               {isLoggedIn ? (
                 <>
-                  <LibraryFilters />
-                  <LibrarySyncButton
-                    accounts={accounts.map((account) => ({
-                      platform:
-                        account.platform === "STEAM"
-                          ? "steam"
-                          : account.platform === "PLAYSTATION"
-                          ? "playstation"
-                            : account.platform === "XBOX"
-                              ? "xbox"
-                              : "switch",
-                      displayName: account.displayName,
-                    }))}
-                  />
-                  <Link
-                    href="/settings"
-                    className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
-                  >
-                    设置
-                  </Link>
-                  <UserAvatarLink user={session?.user ?? {}} />
+                  <div className="flex w-full flex-wrap gap-3 lg:w-auto lg:flex-nowrap">
+                    <div className="min-w-0">
+                      <LibraryFilters />
+                    </div>
+                    <div>
+                      <LibrarySyncButton
+                        accounts={accounts.map((account) => ({
+                          platform:
+                            account.platform === "STEAM"
+                              ? "steam"
+                              : account.platform === "PLAYSTATION"
+                                ? "playstation"
+                                : account.platform === "XBOX"
+                                  ? "xbox"
+                                  : "switch",
+                          displayName: account.displayName,
+                        }))}
+                      />
+                    </div>
+                    <Link
+                      href="/settings"
+                      className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
+                    >
+                      设置
+                    </Link>
+                  </div>
                 </>
               ) : (
                 <AuthButton redirectTo="/" signedOutLabel="登录后展示我的游戏库" />
@@ -66,6 +71,13 @@ export default async function Home({
             </div>
           }
         />
+        {isLoggedIn ? (
+          <div className="pointer-events-none absolute right-5 top-6 sm:right-8 lg:right-12">
+            <div className="pointer-events-auto">
+              <UserAvatarLink user={session?.user ?? {}} />
+            </div>
+          </div>
+        ) : null}
 
         <section className="mt-8">
           {isLoggedIn ? (

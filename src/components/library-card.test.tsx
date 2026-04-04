@@ -19,7 +19,7 @@ describe("LibraryCard", () => {
     const html = renderToStaticMarkup(<LibraryCard item={item} isPending={false} />);
 
     expect(html).toContain('href="/library/user_game_1"');
-    expect(html).toContain("点击查看");
+    expect(html).not.toContain("点击查看");
     expect(html).not.toContain("正在打开");
   });
 
