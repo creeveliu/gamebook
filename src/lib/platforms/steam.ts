@@ -46,6 +46,15 @@ export function buildSteamOpenIdUrl(input: { realm: string; returnTo: string }) 
   return url;
 }
 
+export function buildSteamOpenIdConfig(origin: string) {
+  const normalizedOrigin = origin.replace(/\/$/, "");
+
+  return {
+    realm: normalizedOrigin,
+    returnTo: `${normalizedOrigin}/api/auth/steam/callback`,
+  };
+}
+
 export function extractSteamIdFromClaimedId(claimedId: string) {
   const match = claimedId.match(/https:\/\/steamcommunity\.com\/openid\/id\/(\d+)/);
 

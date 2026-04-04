@@ -1,9 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildSteamOpenIdConfig,
   buildSteamOpenIdUrl,
   extractSteamIdFromClaimedId,
   normalizeSteamOwnedGames,
 } from "@/lib/platforms/steam";
+
+describe("buildSteamOpenIdConfig", () => {
+  it("derives the callback URLs from the current origin", () => {
+    expect(buildSteamOpenIdConfig("https://gamebook-nu.vercel.app/")).toEqual({
+      realm: "https://gamebook-nu.vercel.app",
+      returnTo: "https://gamebook-nu.vercel.app/api/auth/steam/callback",
+    });
+  });
+});
 
 describe("buildSteamOpenIdUrl", () => {
   it("builds a valid Steam OpenID redirect url", () => {

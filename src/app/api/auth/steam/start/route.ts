@@ -1,14 +1,13 @@
-import { NextResponse } from "next/server";
-import { getSteamEnv } from "@/lib/env";
-import { buildSteamOpenIdUrl } from "@/lib/platforms/steam";
+import { NextRequest, NextResponse } from "next/server";
+import { buildSteamOpenIdConfig, buildSteamOpenIdUrl } from "@/lib/platforms/steam";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const { openIdRealm, openIdReturn } = getSteamEnv();
+export async function GET(request: NextRequest) {
+  const { realm, returnTo } = buildSteamOpenIdConfig(request.nextUrl.origin);
   const url = buildSteamOpenIdUrl({
-    realm: openIdRealm,
-    returnTo: openIdReturn,
+    realm,
+    returnTo,
   });
 
   return NextResponse.redirect(url);

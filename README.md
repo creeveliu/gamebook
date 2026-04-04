@@ -18,6 +18,7 @@
 - 首页 `/`：只展示游戏库和同步按钮
 - 设置页 `/settings`：负责授权、连接、手动同步
 - 游戏详情 `/library/:userGameId`：展示来源、时长和私密笔记
+- 生产域名：`https://gamebook.us.ci`
 
 ## 当前限制
 
@@ -67,15 +68,6 @@ npm run dev
 ```env
 DATABASE_URL="postgresql://..."
 STEAM_WEB_API_KEY=your_key
-STEAM_OPENID_REALM=http://localhost:3000
-STEAM_OPENID_RETURN=http://localhost:3000/api/auth/steam/callback
-```
-
-线上部署时把这两个地址改成正式域名：
-
-```env
-STEAM_OPENID_REALM=https://your-domain.com
-STEAM_OPENID_RETURN=https://your-domain.com/api/auth/steam/callback
 ```
 
 ## 可用脚本
@@ -130,5 +122,16 @@ npm run prisma:migrate:deploy
 - 线上至少要配置：
   - `DATABASE_URL`
   - `STEAM_WEB_API_KEY`
-  - `STEAM_OPENID_REALM`
-  - `STEAM_OPENID_RETURN`
+
+## Steam 回调域名
+
+- Steam OpenID 的 `realm` 和 `return_to` 现在会按当前访问域名动态生成。
+- 这可以避免 Vercel 别名变更后，环境变量里的旧域名导致授权回调落到 `404`。
+- 因此不再需要维护 `STEAM_OPENID_REALM` / `STEAM_OPENID_RETURN`。
+
+## 自定义域名记录
+
+- 当前生产主域名是 `gamebook.us.ci`。
+- Vercel 绑定自定义域名时，根域名使用 `A` 记录指向 `216.198.79.1`。
+- 如果域名曾绑定过其他 Vercel 账号，需要额外添加 `_vercel` 的 `TXT` 验证记录。
+- 绑定完成后，Steam 授权与回调会自动跟随当前访问域名，无需再改代码或环境变量。
