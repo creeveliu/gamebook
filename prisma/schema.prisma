@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Platform {
+  STEAM
+  PLAYSTATION
+  XBOX
+  SWITCH
+}
+
+enum ConnectedAccountStatus {
+  CONNECTED
+  ERROR
+}
+
+enum OwnershipStatus {
+  OWNED
+  PLAYED
+}
+
+enum NoteVisibility {
+  PRIVATE
+}
+
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  name              String
+  connectedAccounts ConnectedAccount[]
+  userGames         UserGame[]
+  notes             GameNote[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model ConnectedAccount {
+  id                String                 @id @default(cuid())
+  userId            String
+  platform          Platform
+  externalAccountId String
+  displayName       String
+  status            ConnectedAccountStatus @default(CONNECTED)
+  lastSyncedAt      DateTime?
+  lastSyncError     String?
+  metadata          Json?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sources           UserGameSource[]
+
+  @@unique([userId, platform])
+}
+
+model Game {
+  id           String     @id @default(cuid())
+  title        String
+  canonicalKey String     @unique
+  coverUrl     String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  userGames    UserGame[]
+}
+
+model UserGame {
+  id            String           @id @default(cuid())
+  userId        String
+  gameId        String
+  ownership     OwnershipStatus
+  recentRank    Int?
+  playtimeForeverMinutes Int?
+  playtimeLastTwoWeeksMinutes Int?
+  firstSyncedAt DateTime         @default(now())
+  lastSyncedAt  DateTime
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game          Game             @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  sources       UserGameSource[]
+  notes         GameNote[]
+
+  @@unique([userId, gameId])
+}
+
+model UserGameSource {
+  id                 String           @id @default(cuid())
+  userGameId         String
+  connectedAccountId String
+  platform           Platform
+  platformGameId     String
+  rawData            Json?
+  lastSyncedAt       DateTime
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  userGame           UserGame         @relation(fields: [userGameId], references: [id], onDelete: Cascade)
+  connectedAccount   ConnectedAccount @relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([connectedAccountId, platformGameId])
+}
+
+model GameNote {
+  id         String         @id @default(cuid())
+  userId     String
+  userGameId String
+  visibility NoteVisibility @default(PRIVATE)
+  content    String
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userGame   UserGame       @relation(fields: [userGameId], references: [id], onDelete: Cascade)
+
+  @@unique([id, userId])
+}
