@@ -6,7 +6,7 @@ export function AppShellHeader({
   rightSlot,
 }: {
   title: string;
-  description: string;
+  description?: string;
   rightSlot?: React.ReactNode;
 }) {
   return (
@@ -24,9 +24,11 @@ export function AppShellHeader({
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
           {title}
         </h1>
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-white/58 sm:text-base">
-          {description}
-        </p>
+        {description ? (
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-white/58 sm:text-base">
+            {description}
+          </p>
+        ) : null}
       </div>
       {rightSlot}
     </section>

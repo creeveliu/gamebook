@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const platformOptions = [
@@ -8,47 +9,87 @@ const platformOptions = [
   { value: "playstation", label: "PlayStation" },
 ];
 
-const sortOptions = [
-  { value: "recent-played", label: "最近游玩" },
-  { value: "recent-sync", label: "最近同步" },
-  { value: "recent-notes", label: "最近写笔记" },
-];
-
 export function LibraryFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const update = (key: string, value: string) => {
+  const currentValue = searchParams.get("platform") ?? "all";
+  const currentOption =
+    platformOptions.find((option) => option.value === currentValue) ?? platformOptions[0];
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    window.addEventListener("pointerdown", handlePointerDown);
+    return () => window.removeEventListener("pointerdown", handlePointerDown);
+  }, []);
+
+  const update = (value: string) => {
     const next = new URLSearchParams(searchParams);
-    next.set(key, value);
+    next.set("platform", value);
     router.push(`${pathname}?${next.toString()}`);
+    setOpen(false);
   };
 
   return (
-    <div className="flex flex-wrap gap-3">
-      <select
-        defaultValue={searchParams.get("platform") ?? "all"}
-        onChange={(event) => update("platform", event.target.value)}
-        className="rounded-full border border-white/12 bg-white/5 px-4 py-2 text-sm text-white outline-none"
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="inline-flex min-w-[124px] justify-center rounded-full border border-white/12 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/8"
+        aria-haspopup="listbox"
+        aria-expanded={open}
       >
-        {platformOptions.map((option) => (
-          <option key={option.value} value={option.value} className="bg-[#0f1726]">
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <select
-        defaultValue={searchParams.get("sort") ?? "recent-played"}
-        onChange={(event) => update("sort", event.target.value)}
-        className="rounded-full border border-white/12 bg-white/5 px-4 py-2 text-sm text-white outline-none"
-      >
-        {sortOptions.map((option) => (
-          <option key={option.value} value={option.value} className="bg-[#0f1726]">
-            {option.label}
-          </option>
-        ))}
-      </select>
+        <span className="inline-flex items-center gap-2">
+          <span>{currentOption.label}</span>
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            aria-hidden="true"
+            className={`h-3.5 w-3.5 text-white/72 transition ${open ? "rotate-180" : ""}`}
+          >
+            <path
+              d="M5 7.5L10 12.5L15 7.5"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+      </button>
+
+      {open ? (
+        <div className="absolute left-0 top-[calc(100%+10px)] z-20 min-w-full overflow-hidden rounded-2xl border border-white/12 bg-[#161c29] p-1.5 shadow-[0_16px_48px_rgba(0,0,0,0.34)]">
+          <div role="listbox" aria-label="平台筛选" className="flex flex-col gap-1">
+            {platformOptions.map((option) => {
+              const selected = option.value === currentOption.value;
+
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => update(option.value)}
+                  className={`rounded-xl px-3 py-2 text-left text-sm transition ${
+                    selected ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/6 hover:text-white"
+                  }`}
+                  role="option"
+                  aria-selected={selected}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

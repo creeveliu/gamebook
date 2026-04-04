@@ -7,8 +7,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const platform = (searchParams.get("platform") ?? "all") as PlatformSlug | "all";
-  const sort = searchParams.get("sort") === "recent-notes" ? "recent-notes" : "recent-sync";
-  const items = await getLibrary({ platform, sort });
+  const items = await getLibrary({ platform, sort: "recent-played" });
 
   return NextResponse.json(items);
 }
