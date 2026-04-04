@@ -2,6 +2,7 @@ import { AppShellHeader } from "@/components/app-shell-header";
 import { AuthButton } from "@/components/auth-button";
 import { LibraryGrid } from "@/components/library-grid";
 import { LibrarySyncButton } from "@/components/library-sync-button";
+import { UserAvatarLink } from "@/components/user-avatar-link";
 import { auth } from "@/lib/auth";
 import { getConnectedAccounts, getLibrary } from "@/lib/library-service";
 
@@ -25,7 +26,7 @@ export default async function Home() {
             isLoggedIn ? "" : "登录后即可同步 Steam、整理个人游戏库，并为每个游戏写下只属于你的私密笔记。"
           }
           rightSlot={
-            <div className="flex flex-col items-end gap-3">
+            <div className="flex items-center gap-3 self-start lg:self-auto">
               {isLoggedIn ? (
                 <>
                   <LibrarySyncButton
@@ -41,6 +42,7 @@ export default async function Home() {
                       displayName: account.displayName,
                     }))}
                   />
+                  <UserAvatarLink user={session?.user ?? {}} />
                 </>
               ) : (
                 <AuthButton redirectTo="/" signedOutLabel="登录后展示我的游戏库" />

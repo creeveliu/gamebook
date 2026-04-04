@@ -1,3 +1,4 @@
+import { AccountSummary } from "@/components/account-summary";
 import Link from "next/link";
 import { AuthButton } from "@/components/auth-button";
 import { LibraryControls } from "@/components/library-controls";
@@ -63,24 +64,27 @@ export default async function SettingsPage({
             </div>
           ) : null}
           {isLoggedIn ? (
-            <LibraryControls
-              accounts={accounts.map((account) => ({
-                id: account.id,
-                platform:
-                  account.platform === "STEAM"
-                    ? "steam"
-                    : account.platform === "PLAYSTATION"
-                      ? "playstation"
-                      : account.platform === "XBOX"
-                        ? "xbox"
-                        : "switch",
-                displayName: account.displayName,
-                externalAccountId: account.externalAccountId,
-                status: account.status.toLowerCase(),
-                lastSyncedAt: account.lastSyncedAt?.toISOString() ?? null,
-                lastSyncError: account.lastSyncError,
-              }))}
-            />
+            <>
+              <AccountSummary user={session?.user ?? {}} />
+              <LibraryControls
+                accounts={accounts.map((account) => ({
+                  id: account.id,
+                  platform:
+                    account.platform === "STEAM"
+                      ? "steam"
+                      : account.platform === "PLAYSTATION"
+                        ? "playstation"
+                        : account.platform === "XBOX"
+                          ? "xbox"
+                          : "switch",
+                  displayName: account.displayName,
+                  externalAccountId: account.externalAccountId,
+                  status: account.status.toLowerCase(),
+                  lastSyncedAt: account.lastSyncedAt?.toISOString() ?? null,
+                  lastSyncError: account.lastSyncError,
+                }))}
+              />
+            </>
           ) : null}
         </div>
       </div>
