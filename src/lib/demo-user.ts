@@ -1,14 +1,5 @@
-import { prisma } from "./prisma";
-
-const DEMO_EMAIL = "demo@gamebook.local";
+import { requireCurrentUser } from "./auth-guards";
 
 export async function getCurrentUser() {
-  return prisma.user.upsert({
-    where: { email: DEMO_EMAIL },
-    update: {},
-    create: {
-      email: DEMO_EMAIL,
-      name: "Player One",
-    },
-  });
+  return requireCurrentUser();
 }

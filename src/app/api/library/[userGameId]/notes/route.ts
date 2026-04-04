@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createNote } from "@/lib/library-service";
+import { getErrorMessage, getErrorStatus } from "@/lib/api-errors";
 
 export async function POST(
   request: NextRequest,
@@ -12,7 +13,7 @@ export async function POST(
     const note = await createNote(userGameId, body.content ?? "");
     return NextResponse.json({ ok: true, id: note.id });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "创建笔记失败";
-    return NextResponse.json({ ok: false, error: message }, { status: 400 });
+    const message = getErrorMessage(error, "创建笔记失败");
+    return NextResponse.json({ ok: false, error: message }, { status: getErrorStatus(message) });
   }
 }

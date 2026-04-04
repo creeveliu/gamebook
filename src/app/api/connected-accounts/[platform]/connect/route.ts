@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectPlatformAccount } from "@/lib/library-service";
+import { getErrorMessage, getErrorStatus } from "@/lib/api-errors";
 import type { PlatformSlug } from "@/lib/platforms/types";
 
 function asPlatformSlug(value: string): PlatformSlug {
@@ -24,7 +25,7 @@ export async function POST(
     );
     return NextResponse.json({ ok: true, id: account.id });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "绑定失败";
-    return NextResponse.json({ ok: false, error: message }, { status: 400 });
+    const message = getErrorMessage(error, "绑定失败");
+    return NextResponse.json({ ok: false, error: message }, { status: getErrorStatus(message) });
   }
 }

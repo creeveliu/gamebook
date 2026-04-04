@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { syncPlatformAccount } from "@/lib/library-service";
+import { getErrorMessage, getErrorStatus } from "@/lib/api-errors";
 import type { PlatformSlug } from "@/lib/platforms/types";
 
 function asPlatformSlug(value: string): PlatformSlug {
@@ -20,7 +21,7 @@ export async function POST(
     const result = await syncPlatformAccount(asPlatformSlug(platform));
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "同步失败";
-    return NextResponse.json({ ok: false, error: message }, { status: 400 });
+    const message = getErrorMessage(error, "同步失败");
+    return NextResponse.json({ ok: false, error: message }, { status: getErrorStatus(message) });
   }
 }

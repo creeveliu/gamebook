@@ -4,6 +4,7 @@
 
 ## 当前能力
 
+- `Google` 真实登录
 - 真实绑定 `Steam`
 - 首页手动触发 `同步游戏库`
 - 海报墙形式展示个人游戏库
@@ -13,10 +14,11 @@
 
 ## 当前状态
 
+- 用户系统：已接入真实登录，每个用户只看见自己的书库、连接和笔记
 - `Steam`：真实授权和真实同步已完成
 - `PlayStation`：未接入真实同步，设置页只保留“即将支持”
-- 首页 `/`：只展示游戏库和同步按钮
-- 设置页 `/settings`：负责授权、连接、手动同步
+- 首页 `/`：未登录可见公开壳子；登录后展示自己的游戏库和同步按钮
+- 设置页 `/settings`：未登录显示登录引导；登录后负责平台授权、连接、手动同步
 - 游戏详情 `/library/:userGameId`：展示来源、时长和私密笔记
 - 生产域名：`https://gamebook.us.ci`
 
@@ -67,8 +69,13 @@ npm run dev
 
 ```env
 DATABASE_URL="postgresql://..."
+AUTH_SECRET="..."
+AUTH_GOOGLE_ID="..."
+AUTH_GOOGLE_SECRET="..."
 STEAM_WEB_API_KEY=your_key
 ```
+
+可直接参考 [.env.example](/Users/cl/Projects/Gamebook/.env.example)。
 
 ## 可用脚本
 
@@ -128,6 +135,12 @@ npm run prisma:migrate:deploy
 - Steam OpenID 的 `realm` 和 `return_to` 现在会按当前访问域名动态生成。
 - 这可以避免 Vercel 别名变更后，环境变量里的旧域名导致授权回调落到 `404`。
 - 因此不再需要维护 `STEAM_OPENID_REALM` / `STEAM_OPENID_RETURN`。
+
+## 用户与权限
+
+- 首页未登录时不会返回任何私人书库数据
+- 所有平台绑定、同步、笔记写操作都要求已登录
+- 游戏详情、书库、笔记、连接状态全部按当前登录用户隔离
 
 ## 自定义域名记录
 

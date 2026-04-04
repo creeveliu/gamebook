@@ -4,7 +4,6 @@ import {
   Prisma,
 } from "@prisma/client";
 import { buildCanonicalGameKey, mergeLibraryEntries } from "./domain/library";
-import { getCurrentUser } from "./demo-user";
 import { getAdapter } from "./platforms/adapters";
 import {
   platformMap,
@@ -12,6 +11,7 @@ import {
   type ExternalGame,
   type PlatformSlug,
 } from "./platforms/types";
+import { getOptionalCurrentUser, requireCurrentUser } from "./auth-guards";
 import { prisma } from "./prisma";
 
 export type LibrarySort = "recent-played" | "recent-sync" | "recent-notes";
@@ -48,7 +48,11 @@ function compareBySort(sort: LibrarySort) {
 }
 
 export async function getConnectedAccounts() {
-  const user = await getCurrentUser();
+  const user = await getOptionalCurrentUser();
+
+  if (!user) {
+    return [];
+  }
 
   return prisma.connectedAccount.findMany({
     where: { userId: user.id },
@@ -57,7 +61,7 @@ export async function getConnectedAccounts() {
 }
 
 export async function connectPlatformAccount(platform: PlatformSlug, externalAccountId: string) {
-  const user = await getCurrentUser();
+  const user = await requireCurrentUser();
   const adapter = getAdapter(platform);
   const connected = await adapter.connect({ externalAccountId });
 
@@ -91,7 +95,7 @@ export async function connectResolvedPlatformAccount(input: {
   displayName: string;
   metadata?: Record<string, unknown>;
 }) {
-  const user = await getCurrentUser();
+  const user = await requireCurrentUser();
 
   return prisma.connectedAccount.upsert({
     where: {
@@ -187,7 +191,7 @@ async function upsertExternalGame(
 }
 
 export async function syncPlatformAccount(platform: PlatformSlug) {
-  const user = await getCurrentUser();
+  const user = await requireCurrentUser();
   const connectedAccount = await prisma.connectedAccount.findUnique({
     where: {
       userId_platform: {
@@ -241,9 +245,13 @@ export async function getLibrary(options?: {
   platform?: PlatformSlug | "all";
   sort?: LibrarySort;
 }) {
-  const user = await getCurrentUser();
+  const user = await getOptionalCurrentUser();
   const sort = options?.sort ?? "recent-played";
   const filterPlatform = options?.platform && options.platform !== "all" ? parsePlatform(options.platform) : null;
+
+  if (!user) {
+    return [];
+  }
 
   const userGames = await prisma.userGame.findMany({
     where: {
@@ -297,7 +305,7 @@ export async function getLibrary(options?: {
 }
 
 export async function getLibraryItem(userGameId: string) {
-  const user = await getCurrentUser();
+  const user = await requireCurrentUser();
 
   return prisma.userGame.findFirst({
     where: {
@@ -320,7 +328,7 @@ export async function getLibraryItem(userGameId: string) {
 }
 
 export async function createNote(userGameId: string, content: string) {
-  const user = await getCurrentUser();
+  const user = await requireCurrentUser();
   const trimmed = content.trim();
 
   if (!trimmed) {
@@ -338,7 +346,7 @@ export async function createNote(userGameId: string, content: string) {
 }
 
 export async function updateNote(noteId: string, content: string) {
-  const user = await getCurrentUser();
+  const user = await requireCurrentUser();
   const trimmed = content.trim();
 
   if (!trimmed) {
@@ -357,7 +365,7 @@ export async function updateNote(noteId: string, content: string) {
 }
 
 export async function deleteNote(noteId: string) {
-  const user = await getCurrentUser();
+  const user = await requireCurrentUser();
 
   return prisma.gameNote.delete({
     where: {

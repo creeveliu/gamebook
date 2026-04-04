@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { NotePanel } from "@/components/note-panel";
+import { auth } from "@/lib/auth";
 import { getLibraryItem } from "@/lib/library-service";
 import { platformLabel, platformToSlug } from "@/lib/platforms/types";
 
@@ -33,6 +34,12 @@ export default async function GameDetailPage({
 }: {
   params: Promise<{ userGameId: string }>;
 }) {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect("/");
+  }
+
   const { userGameId } = await params;
   const item = await getLibraryItem(userGameId);
 

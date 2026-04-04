@@ -11,7 +11,5 @@ function readEnv(name: string) {
 export function getSteamEnv() {
   return {
     apiKey: readEnv("STEAM_WEB_API_KEY"),
-    openIdRealm: readEnv("STEAM_OPENID_REALM"),
-    openIdReturn: readEnv("STEAM_OPENID_RETURN"),
   };
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deleteNote, updateNote } from "@/lib/library-service";
+import { getErrorMessage, getErrorStatus } from "@/lib/api-errors";
 
 export async function PATCH(
   request: NextRequest,
@@ -12,8 +13,8 @@ export async function PATCH(
     await updateNote(noteId, body.content ?? "");
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "更新笔记失败";
-    return NextResponse.json({ ok: false, error: message }, { status: 400 });
+    const message = getErrorMessage(error, "更新笔记失败");
+    return NextResponse.json({ ok: false, error: message }, { status: getErrorStatus(message) });
   }
 }
 
@@ -27,7 +28,7 @@ export async function DELETE(
     await deleteNote(noteId);
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "删除笔记失败";
-    return NextResponse.json({ ok: false, error: message }, { status: 400 });
+    const message = getErrorMessage(error, "删除笔记失败");
+    return NextResponse.json({ ok: false, error: message }, { status: getErrorStatus(message) });
   }
 }

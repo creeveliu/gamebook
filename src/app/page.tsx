@@ -1,21 +1,18 @@
 import { AppShellHeader } from "@/components/app-shell-header";
-import { LibraryFilters } from "@/components/library-filters";
+import { AuthButton } from "@/components/auth-button";
 import { LibraryGrid } from "@/components/library-grid";
 import { LibrarySyncButton } from "@/components/library-sync-button";
+import { auth } from "@/lib/auth";
 import { getConnectedAccounts, getLibrary } from "@/lib/library-service";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams?: Promise<{ platform?: string }>;
-}) {
-  const resolved = (await searchParams) ?? {};
-  const platform = resolved.platform === "steam" || resolved.platform === "playstation" ? resolved.platform : "all";
+export default async function Home() {
+  const session = await auth();
+  const isLoggedIn = Boolean(session?.user);
 
   const [library, accounts] = await Promise.all([
-    getLibrary({ platform, sort: "recent-played" }),
+    getLibrary({ sort: "recent-played" }),
     getConnectedAccounts(),
   ]);
 
@@ -24,29 +21,46 @@ export default async function Home({
       <div className="mx-auto max-w-7xl">
         <AppShellHeader
           title="游戏库"
-          description=""
+          description={
+            isLoggedIn ? "" : "登录后即可同步 Steam、整理个人游戏库，并为每个游戏写下只属于你的私密笔记。"
+          }
           rightSlot={
             <div className="flex flex-col items-end gap-3">
-              <LibrarySyncButton
-                accounts={accounts.map((account) => ({
-                  platform:
-                    account.platform === "STEAM"
-                      ? "steam"
-                      : account.platform === "PLAYSTATION"
-                        ? "playstation"
-                        : account.platform === "XBOX"
-                          ? "xbox"
-                          : "switch",
-                  displayName: account.displayName,
-                }))}
-              />
-              <LibraryFilters />
+              {isLoggedIn ? (
+                <>
+                  <LibrarySyncButton
+                    accounts={accounts.map((account) => ({
+                      platform:
+                        account.platform === "STEAM"
+                          ? "steam"
+                          : account.platform === "PLAYSTATION"
+                          ? "playstation"
+                            : account.platform === "XBOX"
+                              ? "xbox"
+                              : "switch",
+                      displayName: account.displayName,
+                    }))}
+                  />
+                </>
+              ) : (
+                <AuthButton redirectTo="/" signedOutLabel="登录后展示我的游戏库" />
+              )}
             </div>
           }
         />
 
         <section className="mt-8">
-          <LibraryGrid items={library} />
+          {isLoggedIn ? (
+            <LibraryGrid items={library} />
+          ) : (
+            <div className="rounded-[28px] border border-dashed border-white/12 bg-white/[0.03] px-8 py-16 text-center">
+              <p className="text-sm uppercase tracking-[0.28em] text-white/35">Your Library</p>
+              <h3 className="mt-4 text-2xl font-semibold text-white">登录后展示你的游戏库</h3>
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/55">
+                你可以先浏览首页。登录后再绑定 Steam 并手动同步，海报墙、最近游玩排序和私密笔记都会出现在这里。
+              </p>
+            </div>
+          )}
         </section>
       </div>
     </main>
