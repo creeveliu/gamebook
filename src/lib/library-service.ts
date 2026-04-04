@@ -287,16 +287,42 @@ export async function getLibraryItem(userGameId: string) {
       id: userGameId,
       userId: user.id,
     },
-    include: {
-      game: true,
-      sources: {
-        include: {
-          connectedAccount: true,
+    select: {
+      id: true,
+      firstSyncedAt: true,
+      lastSyncedAt: true,
+      recentRank: true,
+      ownership: true,
+      playtimeForeverMinutes: true,
+      playtimeLastTwoWeeksMinutes: true,
+      game: {
+        select: {
+          title: true,
+          coverUrl: true,
         },
+      },
+      sources: {
         orderBy: { lastSyncedAt: "desc" },
+        select: {
+          id: true,
+          platform: true,
+          platformGameId: true,
+          lastSyncedAt: true,
+          connectedAccount: {
+            select: {
+              displayName: true,
+            },
+          },
+        },
       },
       notes: {
         orderBy: { updatedAt: "desc" },
+        select: {
+          id: true,
+          content: true,
+          visibility: true,
+          updatedAt: true,
+        },
       },
     },
   });

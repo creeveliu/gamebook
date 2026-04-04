@@ -3,7 +3,15 @@ import { prisma } from "@/lib/prisma";
 
 export async function getOptionalCurrentUser() {
   const session = await auth();
-  const email = session?.user?.email;
+  const sessionUser = session?.user;
+  const email = sessionUser?.email;
+
+  if (sessionUser?.id) {
+    return {
+      id: sessionUser.id,
+      email: email ?? null,
+    };
+  }
 
   if (!email) {
     return null;
@@ -12,6 +20,10 @@ export async function getOptionalCurrentUser() {
   return prisma.user.findUnique({
     where: {
       email,
+    },
+    select: {
+      id: true,
+      email: true,
     },
   });
 }

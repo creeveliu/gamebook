@@ -21,6 +21,23 @@ describe("auth guards", () => {
     findUniqueMock.mockReset();
   });
 
+  it("returns the session user directly when the user id is already present", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user_1",
+        email: "player@example.com",
+      },
+    });
+
+    const { getOptionalCurrentUser } = await import("@/lib/auth-guards");
+
+    await expect(getOptionalCurrentUser()).resolves.toMatchObject({
+      id: "user_1",
+      email: "player@example.com",
+    });
+    expect(findUniqueMock).not.toHaveBeenCalled();
+  });
+
   it("returns null when there is no authenticated user", async () => {
     authMock.mockResolvedValue(null);
 
@@ -50,6 +67,10 @@ describe("auth guards", () => {
     expect(findUniqueMock).toHaveBeenCalledWith({
       where: {
         email: "player@example.com",
+      },
+      select: {
+        id: true,
+        email: true,
       },
     });
   });
